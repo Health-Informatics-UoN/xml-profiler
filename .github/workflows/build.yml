@@ -1,6 +1,9 @@
 name: Build and Publish Executable
 
-on: [push]
+on:
+  push:
+    paths:
+      - .github/workflows/build.yml
 
 jobs:
   build:
