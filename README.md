@@ -1,6 +1,11 @@
 # XMLBunny
 
-A Console app for analysing the structure of XML files.
+A Console app for analysing and printing out the structure of XML files.
+
+## To Use:
+
+- Download executable <a href="https://github.com/Health-Informatics-UoN/xml-bunny/actions/runs/10249883361/artifacts/1776494640">here</a>
+- Unzip folder and run `XMLBunny.exe`
 
 ## Sample XML
 
