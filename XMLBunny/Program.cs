@@ -21,6 +21,8 @@ void GenerateStatistics()
     {
         var doc = new XmlDocument();
         doc.Load(filePath);
+        if (doc.DocumentElement == null) 
+            throw new NullReferenceException("Something went wrong loading the XML file");
         ParseXml(doc.DocumentElement);
         DisplayData(fileName);
     }
@@ -81,7 +83,7 @@ bool IsTextNode(XmlNode node)
 {
     return !string.IsNullOrWhiteSpace(node.InnerText) &&
            node.ChildNodes.Count == 1 && 
-           node.FirstChild.NodeType == XmlNodeType.Text;
+           node.FirstChild?.NodeType == XmlNodeType.Text;
 }
 
 void DisplayData(string fileName)
