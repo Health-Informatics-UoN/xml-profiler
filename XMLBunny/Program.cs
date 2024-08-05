@@ -142,6 +142,9 @@ void Restart()
     if (response.ToLower().Trim() == "yes")
     {
         Console.Clear();
+        tags.Clear();
+        values.Clear();
+        ages.Clear();
         GenerateStatistics();
     } 
     else if (response.ToLower().Trim() == "no")
