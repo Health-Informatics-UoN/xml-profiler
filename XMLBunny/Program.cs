@@ -91,14 +91,14 @@ void DisplayData(string fileName)
     Console.Clear();
     Console.WriteLine($"{fileName}: \n");
     
-    DisplayEmtyTags();
+    DisplayEmptyTags();
     DisplayValueTags();
     DisplayAgeRange();
     
     Restart();
 }
 
-void DisplayEmtyTags()
+void DisplayEmptyTags()
 {
     var emptyTags = tags.Where(x => x.Values.Count <= 0).ToList();
     var emptyTagsTable = new ConsoleTable("Tag", "Count");
