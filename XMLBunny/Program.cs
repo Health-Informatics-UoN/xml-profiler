@@ -2,10 +2,11 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using ConsoleTables;
 using XMLBunny;
+using Range = XMLBunny.Range;
 
 var tags = new List<Tag>();
 var values = new List<Value>();
-var ages = new List<int>();
+var ranges = new List<Range>();
 
 Console.Clear();
 
@@ -72,10 +73,26 @@ void AddOrUpdateValue(XmlNode node)
         ++value.Count;
     }
     if (tag != null && !tag.Values.Exists(x => x.Name == value?.Name)) tag.Values.Add(newValue);
-    
-    if (node.Name.ToLower().Trim() == "age" && int.TryParse(node.InnerText.Trim(), out int age))
+    if (tag != null) AddOrUpdateRange(node, tag);
+}
+
+void AddOrUpdateRange(XmlNode node, Tag tag)
+{
+    if (int.TryParse(node.InnerText.Trim(), out int age))
     {
-        ages.Add(age);
+        var existingRange = ranges.Find(x => x.Tag.Name == tag?.Name);
+        if (existingRange != null)
+        {
+            existingRange.Numbers.Add(age);
+        }
+        else
+        {
+            ranges.Add(new Range
+            {
+                Numbers = new List<int>() {age},
+                Tag = tag
+            });
+        }
     }
 }
 
@@ -93,7 +110,7 @@ void DisplayData(string fileName)
     
     DisplayEmptyTags();
     DisplayValueTags();
-    DisplayAgeRange();
+    DisplayRanges();
     
     Restart();
 }
@@ -125,12 +142,16 @@ void DisplayValueTags()
     }
 }
 
-void DisplayAgeRange()
+void DisplayRanges()
 {
-    if (ages.Any())
+    if (ranges.Any())
     {
-        var ageRangeTable = new ConsoleTable("Age Range");
-        ageRangeTable.AddRow($"{ages.Min()} – {ages.Max()}");
+        var ageRangeTable = new ConsoleTable("Tag", "Range");
+        foreach (var range in ranges)
+        {
+            if (range.Numbers.Count > 1 && range.Numbers.Min() != range.Numbers.Max()) 
+                ageRangeTable.AddRow(range.Tag.Name, $"{range.Numbers.Min()} – {range.Numbers.Max()}");
+        }
         ageRangeTable.Write(Format.Alternative);
         Console.WriteLine();
     }
@@ -146,7 +167,7 @@ void Restart()
         Console.Clear();
         tags.Clear();
         values.Clear();
-        ages.Clear();
+        ranges.Clear();
         GenerateStatistics();
     } 
     else if (response.ToLower().Trim() == "no")
