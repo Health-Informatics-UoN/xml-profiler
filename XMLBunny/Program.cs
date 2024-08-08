@@ -1,18 +1,18 @@
-using System.Text.RegularExpressions;
 using System.Xml;
-using ConsoleTables;
-using XMLBunny;
-using Range = XMLBunny.Range;
+using ClosedXML.Excel;
+using XMLBunny.Models;
+using XMLBunny.Services;
 
 var tags = new List<Tag>();
 var values = new List<Value>();
-var ranges = new List<Range>();
+var ranges = new List<NumberRange>();
+var xmlService = new XmlParserService();
+var excelService = new ExcelGeneratorService();
 
 Console.Clear();
 
 void GenerateStatistics()
 { 
-    // Get the file path from Desktop
     var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
     Console.Write("Enter XML File Name: ");
     var fileName = Console.ReadLine() ?? string.Empty;
@@ -22,10 +22,9 @@ void GenerateStatistics()
     {
         var doc = new XmlDocument();
         doc.Load(filePath);
-        if (doc.DocumentElement == null) 
-            throw new NullReferenceException("Something went wrong loading the XML file");
-        ParseXml(doc.DocumentElement);
-        DisplayData(fileName);
+        if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
+        xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
+        SaveDataToExcel(fileName);
     }
     catch (Exception e)
     {
@@ -34,127 +33,22 @@ void GenerateStatistics()
     }
 }
 
-void ParseXml(XmlNode node)
+void SaveDataToExcel(string fileName)
 {
-    if (node == null) return;
-    if (node.NodeType == XmlNodeType.Text) return;
+    var workbook = new XLWorkbook();
+    var sheet = workbook.Worksheets.Add(fileName.Replace(".xml",""));
+    var row = 1;
+    var column = 1;
     
-    AddOrUpdateTag(node);
+    excelService.SaveEmptyTags(sheet, tags, row, column);
+    excelService.SaveValueTags(sheet, tags, row, column);
+    excelService.SaveRanges(sheet, ranges, row, column);
     
-    if (IsTextNode(node)) AddOrUpdateValue(node);
-    
-    foreach (XmlNode child in node.ChildNodes) ParseXml(child);
-}
+    var outputFilePath = Environment.CurrentDirectory + $"/{fileName.Replace(".xml", ".xlsx")}";
+    workbook.SaveAs(outputFilePath);
+    Console.WriteLine($"Data has been saved to {outputFilePath}");
 
-void AddOrUpdateTag(XmlNode node)
-{
-    var tag = tags.Find(x => x.Name == node.Name);
-    if (tag == null)
-    {
-        tags.Add(new Tag { Name = node.Name.Trim(), Count = 1 });
-    }
-    else
-    {
-        ++tag.Count;
-    }
-}
-
-void AddOrUpdateValue(XmlNode node)
-{
-    var tag = tags.Find(x => x.Name == node.Name);
-    var value = values.Find(x => x.Name == node.InnerText);
-    var newValue = new Value { Name = Regex.Replace(node.InnerText.Trim(), @"\s+", " "), Count = 1, Tag = tag };
-    if (value == null)
-    {
-        values.Add(newValue);
-    }
-    else
-    {
-        ++value.Count;
-    }
-    if (tag != null && !tag.Values.Exists(x => x.Name == value?.Name)) tag.Values.Add(newValue);
-    if (tag != null) AddOrUpdateRange(node, tag);
-}
-
-void AddOrUpdateRange(XmlNode node, Tag tag)
-{
-    if (int.TryParse(node.InnerText.Trim(), out int age))
-    {
-        var existingRange = ranges.Find(x => x.Tag.Name == tag?.Name);
-        if (existingRange != null)
-        {
-            existingRange.Numbers.Add(age);
-        }
-        else
-        {
-            ranges.Add(new Range
-            {
-                Numbers = new List<int>() {age},
-                Tag = tag
-            });
-        }
-    }
-}
-
-bool IsTextNode(XmlNode node)
-{
-    return !string.IsNullOrWhiteSpace(node.InnerText) &&
-           node.ChildNodes.Count == 1 && 
-           node.FirstChild?.NodeType == XmlNodeType.Text;
-}
-
-void DisplayData(string fileName)
-{
-    Console.Clear();
-    Console.WriteLine($"{fileName}: \n");
-    
-    DisplayEmptyTags();
-    DisplayValueTags();
-    DisplayRanges();
-    
     Restart();
-}
-
-void DisplayEmptyTags()
-{
-    var emptyTags = tags.Where(x => x.Values.Count <= 0).ToList();
-    var emptyTagsTable = new ConsoleTable("Tag", "Count");
-    foreach (var emptyTag in emptyTags)
-    {
-        emptyTagsTable.AddRow(emptyTag.Name, emptyTag.Count);
-    }
-    emptyTagsTable.Write(Format.Alternative);
-    Console.WriteLine();
-}
-
-void DisplayValueTags()
-{
-    var valueTags = tags.Where(x => x.Values.Count > 0).ToList();
-    foreach (var valueTag in valueTags)
-    {
-        var valueTagsTable = new ConsoleTable(valueTag.Name, valueTag.Count.ToString());
-        foreach (var value in valueTag.Values)
-        {
-            valueTagsTable.AddRow(value.Name, value.Count);
-        }
-        valueTagsTable.Write(Format.Alternative);
-        Console.WriteLine();
-    }
-}
-
-void DisplayRanges()
-{
-    if (ranges.Any())
-    {
-        var ageRangeTable = new ConsoleTable("Tag", "Range");
-        foreach (var range in ranges)
-        {
-            if (range.Numbers.Count > 1 && range.Numbers.Min() != range.Numbers.Max()) 
-                ageRangeTable.AddRow(range.Tag.Name, $"{range.Numbers.Min()} – {range.Numbers.Max()}");
-        }
-        ageRangeTable.Write(Format.Alternative);
-        Console.WriteLine();
-    }
 }
 
 void Restart()

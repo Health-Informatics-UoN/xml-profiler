@@ -1,4 +1,4 @@
-namespace XMLBunny;
+namespace XMLBunny.Models;
 
 public class Value
 {
