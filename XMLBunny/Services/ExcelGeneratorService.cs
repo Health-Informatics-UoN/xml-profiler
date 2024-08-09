@@ -5,13 +5,13 @@ namespace XMLBunny.Services;
 
 public class ExcelGeneratorService
 {
-    public void SaveEmptyTags(IXLWorksheet sheet, List<Tag> tags, int row, int column)
+    public void SaveToExcel(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int row, int column)
     {
+        // Add empty tags to excel
         var emptyTags = tags.Where(x => x.Values.Count <= 0).ToList();
         sheet.Cell(row, column).Value = "Tag";
         sheet.Cell(row, column + 1).Value = "Count";
         row += 1;
-        
         for (int i = 0; i < emptyTags.Count(); i++)
         {
             sheet.Cell(row, column).Value = emptyTags[i].Name;
@@ -23,9 +23,12 @@ public class ExcelGeneratorService
                 column += 2;
             }
         }
+        
+        // Add value tags to excel
+        SaveValueTags(sheet, tags, ranges, row, column);
     }
     
-    public void SaveValueTags(IXLWorksheet sheet, List<Tag> tags, int row, int column)
+    private void SaveValueTags(IXLWorksheet sheet, List<Tag> tags,  List<NumberRange> ranges, int row, int column)
     {
         var valueTags = tags.Where(x => x.Values.Count > 0).ToList();
         for (int i = 0; i < valueTags.Count(); i++)
@@ -45,9 +48,12 @@ public class ExcelGeneratorService
                 }
             }
         }
+        
+        // Add ranges to excel
+        SaveRanges(sheet, ranges, row, column);
     }
     
-    public void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int row, int column)
+    private void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int row, int column)
     {
         sheet.Cell(row, column).Value = "Tag";
         sheet.Cell(row, column + 1).Value = "Range";

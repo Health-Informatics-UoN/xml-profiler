@@ -40,9 +40,7 @@ void SaveDataToExcel(string fileName)
     var row = 1;
     var column = 1;
     
-    excelService.SaveEmptyTags(sheet, tags, row, column);
-    excelService.SaveValueTags(sheet, tags, row, column);
-    excelService.SaveRanges(sheet, ranges, row, column);
+    excelService.SaveToExcel(sheet, tags, ranges, row, column);
     
     var outputFilePath = Environment.CurrentDirectory + $"/{fileName.Replace(".xml", ".xlsx")}";
     workbook.SaveAs(outputFilePath);
