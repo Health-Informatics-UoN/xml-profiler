@@ -13,15 +13,15 @@ Console.Clear();
 
 void GenerateStatistics()
 { 
-    var path = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
+    Console.Write("Enter Path To XML File: ");
+    var filePath = Console.ReadLine() ?? string.Empty;
     Console.Write("Enter XML File Name: ");
     var fileName = Console.ReadLine() ?? string.Empty;
-    var filePath = path + $"/{fileName}";
-
+    
     try
     {
         var doc = new XmlDocument();
-        doc.Load(filePath);
+        doc.Load($"{filePath}/{fileName}");
         if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
         xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
         SaveDataToExcel(fileName);
@@ -42,7 +42,9 @@ void SaveDataToExcel(string fileName)
     
     excelService.SaveToExcel(sheet, tags, ranges, row, column);
     
-    var outputFilePath = Environment.CurrentDirectory + $"/{fileName.Replace(".xml", ".xlsx")}";
+    Console.Write("Enter The Path To Save The Output: ");
+    var path = Console.ReadLine() ?? string.Empty;
+    var outputFilePath = Environment.CurrentDirectory + $"/{path}" + $"/{fileName.Replace(".xml", ".xlsx")}";
     workbook.SaveAs(outputFilePath);
     Console.WriteLine($"Data has been saved to {outputFilePath}");
 
