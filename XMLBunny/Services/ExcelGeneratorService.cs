@@ -5,7 +5,7 @@ namespace XMLBunny.Services;
 
 public class ExcelGeneratorService
 {
-    public void SaveToExcel(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int row, int column)
+    public void SaveToExcel(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int threshold, int row, int column)
     {
         // Add empty tags to excel
         var emptyTags = tags.Where(x => x.Values.Count <= 0).ToList();
@@ -14,6 +14,14 @@ public class ExcelGeneratorService
         row += 1;
         for (int i = 0; i < emptyTags.Count(); i++)
         {
+            if (emptyTags.Count() < threshold)
+            {
+                sheet.Cell(row, column).Value = "List Truncated...";
+                row = 1;
+                column += 2;
+                break;
+            }
+            
             sheet.Cell(row, column).Value = emptyTags[i].Name;
             sheet.Cell(row, column + 1).Value = emptyTags[i].Count;
             row += 1;
@@ -25,10 +33,10 @@ public class ExcelGeneratorService
         }
         
         // Add value tags to excel
-        SaveValueTags(sheet, tags, ranges, row, column);
+        SaveValueTags(sheet, tags, ranges, threshold, row, column);
     }
     
-    private void SaveValueTags(IXLWorksheet sheet, List<Tag> tags,  List<NumberRange> ranges, int row, int column)
+    private void SaveValueTags(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int threshold, int row, int column)
     {
         var valueTags = tags.Where(x => x.Values.Count > 0).ToList();
         for (int i = 0; i < valueTags.Count(); i++)
@@ -38,6 +46,14 @@ public class ExcelGeneratorService
             row += 1;
             for (int j = 0; j < valueTags[i].Values.Count(); j++)
             {
+                if (valueTags[i].Values.Count() < threshold)
+                {
+                    sheet.Cell(row, column).Value = "List Truncated...";
+                    row = 1;
+                    column += 2;
+                    break;
+                }
+                    
                 sheet.Cell(row, column).Value = valueTags[i].Values[j].Name;
                 sheet.Cell(row, column + 1).Value = valueTags[i].Values[j].Count;
                 row += 1;

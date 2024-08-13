@@ -17,6 +17,8 @@ void GenerateStatistics()
     var filePath = Console.ReadLine() ?? string.Empty;
     Console.Write("Enter XML File Name: ");
     var fileName = Console.ReadLine() ?? string.Empty;
+    Console.Write("Enter The Minimum Count Threshold: ");
+    var threshold = Int32.Parse(Console.ReadLine() ?? string.Empty);
     
     try
     {
@@ -24,7 +26,7 @@ void GenerateStatistics()
         doc.Load($"{filePath}/{fileName}");
         if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
         xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
-        SaveDataToExcel(fileName);
+        SaveDataToExcel(fileName, threshold);
     }
     catch (Exception e)
     {
@@ -33,14 +35,14 @@ void GenerateStatistics()
     }
 }
 
-void SaveDataToExcel(string fileName)
+void SaveDataToExcel(string fileName, int threshold)
 {
-    var workbook = new XLWorkbook();
-    var sheet = workbook.Worksheets.Add(fileName.Replace(".xml",""));
     var row = 1;
     var column = 1;
+    var workbook = new XLWorkbook();
+    var sheet = workbook.Worksheets.Add(fileName.Replace(".xml",""));
     
-    excelService.SaveToExcel(sheet, tags, ranges, row, column);
+    excelService.SaveToExcel(sheet, tags, ranges, threshold, row, column);
     
     Console.Write("Enter The Path To Save The Output: ");
     var path = Console.ReadLine() ?? string.Empty;
