@@ -66,16 +66,18 @@ public class ExcelGeneratorService
         }
         
         // Add ranges to excel
-        SaveRanges(sheet, ranges, row, column);
+        SaveRanges(sheet, ranges, threshold, row, column);
     }
     
-    private void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int row, int column)
+    private void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int threshold, int row, int column)
     {
         sheet.Cell(row, column).Value = "Tag";
         sheet.Cell(row, column + 1).Value = "Range";
         row += 1;
         for (int i = 0; i < ranges.Count(); i++)
         {
+            if (ranges[i].Tag.Count < threshold) continue;
+            
             if (ranges[i].Numbers.Count > 1 && ranges[i].Numbers.Min() != ranges[i].Numbers.Max())
             { 
                 sheet.Cell(row, column).Value = ranges[i].Tag.Name;

@@ -50,18 +50,18 @@ public class XmlParserService
     
     private void AddOrUpdateRange(XmlNode node, Tag tag, List<NumberRange> ranges)
     {
-        if (int.TryParse(node.InnerText.Trim(), out int age))
+        if (int.TryParse(node.InnerText.Trim(), out int number))
         {
             var existingRange = ranges.Find(x => x.Tag.Name == tag?.Name);
             if (existingRange != null)
             {
-                existingRange.Numbers.Add(age);
+                existingRange.Numbers.Add(number);
             }
             else
             {
                 ranges.Add(new NumberRange
                 {
-                    Numbers = new List<int>() {age},
+                    Numbers = new List<int>() {number},
                     Tag = tag
                 });
             }
