@@ -71,18 +71,22 @@ public class ExcelGeneratorService
     
     private void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int threshold, int row, int column)
     {
-        sheet.Cell(row, column).Value = "Tag";
-        sheet.Cell(row, column + 1).Value = "Range";
-        row += 1;
-        for (int i = 0; i < ranges.Count(); i++)
+        var exists = ranges.Find(x => x.Tag.Count > threshold);
+        if (exists != null)
         {
-            if (ranges[i].Tag.Count < threshold) continue;
+            sheet.Cell(row, column).Value = "Tag";
+            sheet.Cell(row, column + 1).Value = "Range";
+            row += 1;
+            for (int i = 0; i < ranges.Count(); i++)
+            {
+                if (ranges[i].Tag.Count < threshold) continue;
             
-            if (ranges[i].Numbers.Count > 1 && ranges[i].Numbers.Min() != ranges[i].Numbers.Max())
-            { 
-                sheet.Cell(row, column).Value = ranges[i].Tag.Name;
-                sheet.Cell(row, column + 1).Value = $"{ranges[i].Numbers.Min()} – {ranges[i].Numbers.Max()}";
-                row += 1;
+                if (ranges[i].Numbers.Count > 1 && ranges[i].Numbers.Min() != ranges[i].Numbers.Max())
+                { 
+                    sheet.Cell(row, column).Value = ranges[i].Tag.Name;
+                    sheet.Cell(row, column + 1).Value = $"{ranges[i].Numbers.Min()} – {ranges[i].Numbers.Max()}";
+                    row += 1;
+                }
             }
         }
     }
