@@ -22,8 +22,10 @@ void GenerateStatistics()
     
     try
     {
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var path = Path.Combine(root, filePath, fileName);
         var doc = new XmlDocument();
-        doc.Load($"{filePath}/{fileName}");
+        doc.Load(path);
         if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
         xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
         SaveDataToExcel(fileName, threshold);
@@ -46,7 +48,8 @@ void SaveDataToExcel(string fileName, int threshold)
     
     Console.Write("Enter The Path To Save The Output: ");
     var path = Console.ReadLine() ?? string.Empty;
-    var outputFilePath = Environment.CurrentDirectory + $"/{path}" + $"/{fileName.Replace(".xml", ".xlsx")}";
+    var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    var outputFilePath = Path.Combine(root, path, fileName.Replace(".xml", ".xlsx"));
     workbook.SaveAs(outputFilePath);
     Console.WriteLine($"Data has been saved to {outputFilePath}");
 
