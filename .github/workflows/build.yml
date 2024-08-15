@@ -1,7 +1,7 @@
 name: Build and Publish Executable
 
 on: [push]
-      
+
 jobs:
   build:
     runs-on: ubuntu-latest    
@@ -33,31 +33,34 @@ jobs:
       with:
         dotnet-version: 8.x
 
-    - name: Build and Pack NuGet package
-      run: dotnet pack XMLBunny/XMLBunny.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release -o ./bin/Release
-    
-    - name: Upload NuGet package to GitHub
+    - name: Restore dependencies
+      run: dotnet restore
+
+    - name: Build and Publish Executable
+      run: dotnet publish -c Release -o ./output
+
+    - name: Upload Executable to GitHub as Artifact
       uses: actions/upload-artifact@v2
       with:
-        name: nugetPackage
-        path: bin/Release/ 
-        
+        name: executable
+        path: output/
+
   release:
     runs-on: ubuntu-latest    
     needs: build  
     
     steps:  
-    - name: Download nuget package artifact
+    - name: Download Executable Artifact
       uses: actions/download-artifact@v1.0.0
       with:
-        name: nugetPackage
+        name: executable
         
     - name: Prep packages
       run: dotnet nuget add source --username Dev-Akashili --password ${{ secrets.PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Dev-Akashili/index.json"
 
     - name: Push package to GitHub packages 
       if: needs.build.outputs.CommitsSinceVersionSource > 0
-      run: dotnet nuget push nugetPackage/*.nupkg --api-key ${{ secrets.PACKAGE_TOKEN }}  --source "github"
+      run: dotnet nuget push executable/*.exe --api-key ${{ secrets.PACKAGE_TOKEN }}  --source "github"
     
     - name: Create Release
       if: 1 == 0
@@ -74,5 +77,5 @@ jobs:
       with:
         tag: ${{ needs.build.outputs.Version }}
         name: Release ${{ needs.build.outputs.Version }}
-        artifacts: "nugetPackage/*"
-        token: ${{ secrets.PACKAGE_TOKEN }}
+        artifacts: "executable/*"
+        token: ${{ secrets.PACKAGE_TOKEN }}"
