@@ -28,6 +28,6 @@ jobs:
 
       - name: Publish
         run: >
-          dotnet nuget push PackageUtils.1.0.0.nupkg
+          dotnet nuget push ./nupkgs/XMLBunny.1.0.0.nupkg
           -s https://nuget.pkg.github.com/Dev-Akashili/index.json
           -k ${{ secrets.PACKAGE_TOKEN }}
