@@ -4,78 +4,28 @@ on: [push]
 
 jobs:
   build:
-    runs-on: ubuntu-latest    
-    outputs: 
-      Version: ${{ steps.gitversion.outputs.SemVer }}
-      CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }} 
+    runs-on: windows-latest
 
     steps:
-    - uses: actions/checkout@v2
-      with:
-        fetch-depth: 0
-          
-    - name: Install GitVersion
-      uses: gittools/actions/gitversion/setup@v0.9.7
-      with:
-        versionSpec: 5.x
+      - name: Checkout code
+        uses: actions/checkout@v3
 
-    - name: Determine Version
-      uses: gittools/actions/gitversion/execute@v0.9.7
-      id: gitversion
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: "8.x"
 
-    - name: Display GitVersion outputs
-      run: |
-        echo "Version: ${{ steps.gitversion.outputs.SemVer }}"
-        echo "CommitsSinceVersionSource: ${{ steps.gitversion.outputs.CommitsSinceVersionSource }}"
-    
-    - name: Setup .NET
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 8.x
+      - name: Restore dependencies
+        run: dotnet restore
 
-    - name: Restore dependencies
-      run: dotnet restore
+      - name: Build project
+        run: dotnet build --c Release
 
-    - name: Build and Publish Executable
-      run: dotnet publish -c Release -o ./output
+      - name: Publish executable
+        run: dotnet publish --c Release -o ./publish
 
-    - name: Upload Executable to GitHub as Artifact
-      uses: actions/upload-artifact@v2
-      with:
-        name: executable
-        path: output/
-
-  release:
-    runs-on: ubuntu-latest    
-    needs: build  
-    
-    steps:  
-    - name: Download Executable Artifact
-      uses: actions/download-artifact@v1.0.0
-      with:
-        name: executable
-        
-    - name: Prep packages
-      run: dotnet nuget add source --username Dev-Akashili --password ${{ secrets.PACKAGE_TOKEN }} --store-password-in-clear-text --name github "https://nuget.pkg.github.com/Dev-Akashili/index.json"
-
-    - name: Push package to GitHub packages 
-      if: needs.build.outputs.CommitsSinceVersionSource > 0
-      run: dotnet nuget push executable/*.nupkg --api-key ${{ secrets.PACKAGE_TOKEN }}  --source "github"
-    
-    - name: Create Release
-      if: 1 == 0
-      uses: actions/create-release@v1
-      env:
-        GITHUB_TOKEN: ${{ secrets.PACKAGE_TOKEN }} 
-      with:
-        tag_name: ${{ needs.build.outputs.Version }}
-        release_name: Release ${{ needs.build.outputs.Version }}
-
-    - name: Create Release
-      if: needs.build.outputs.CommitsSinceVersionSource > 0
-      uses: ncipollo/release-action@v1
-      with:
-        tag: ${{ needs.build.outputs.Version }}
-        name: Release ${{ needs.build.outputs.Version }}
-        artifacts: "executable/*"
-        token: ${{ secrets.PACKAGE_TOKEN }}"
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: XMLBunny
+          path: ./publish
