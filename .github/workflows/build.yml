@@ -34,7 +34,7 @@ jobs:
         dotnet-version: 8.x
 
     - name: Build and Pack NuGet package
-      run: dotnet pack XMLBunny/XMLBunny.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release
+      run: dotnet pack XMLBunny/XMLBunny.csproj -p:Version='${{ steps.gitversion.outputs.SemVer }}' -c Release -o ./bin/Release
     
     - name: Upload NuGet package to GitHub
       uses: actions/upload-artifact@v2
