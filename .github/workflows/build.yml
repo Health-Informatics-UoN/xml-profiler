@@ -21,11 +21,13 @@ jobs:
       - name: Build project
         run: dotnet build -c Release
 
-      - name: Publish executable
-        run: dotnet publish -c Release -o ./publish
+      - name: XMLBunny Package
+        run: >
+          dotnet pack --no-restore --no-build --configuration Release
+          -p:PackageVersion=${{ github.ref_name }} --output
 
-      - name: Upload artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: XMLBunny
-          path: ./publish
+      - name: Publish
+        run: >
+          dotnet nuget push PackageUtils.${{ github.ref_name }}.nupkg
+          -s https://nuget.pkg.github.com/Dev-Akashili/index.json
+          -k ${{ secrets.GITHUB_TOKEN }}

@@ -18,7 +18,7 @@ void GenerateStatistics()
     Console.Write("Enter XML File Name: ");
     var fileName = Console.ReadLine() ?? string.Empty;
     Console.Write("Enter The Minimum Count Threshold: ");
-    var threshold = Int32.Parse(Console.ReadLine() ?? string.Empty);
+    var threshold = Console.ReadLine() ?? string.Empty;
     
     try
     {
@@ -28,7 +28,7 @@ void GenerateStatistics()
         doc.Load(path);
         if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
         xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
-        SaveDataToExcel(fileName, threshold);
+        SaveDataToExcel(fileName, Int32.Parse(threshold));
     }
     catch (Exception e)
     {
