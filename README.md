@@ -1,13 +1,28 @@
 # XMLBunny
 
-A Console app for analysing and printing out the structure of XML files.
+This is a tool that parses an XML file and generates an Excel format report detailing the structure of the file.
 
-## To Use:
+This currently consists of a console application built in C#.
 
-- Download executable <a href="https://github.com/Health-Informatics-UoN/xml-bunny/actions/runs/10249883361/artifacts/1776494640">here</a>
-- Unzip folder and run `XMLBunny.exe`
+## To Get Started
 
-## Sample XML
+1. Download XMLBunny.zip from the assets of the latest release or click <a style="cursor:pointer;" src="http://google.com">here</a>.
+
+2. Extract all from XMLBunny.zip.
+
+3. Open the command line interface. To do this:
+    - Click on windows + R on the keyboard.
+    - Type in 'cmd' and press Enter.
+
+4. From the command line, cd path-to-XMLBunny-extracted-folder e.g cd Downloads/XMLBunny
+
+5. Type in 'XMLBunny.exe' and press the Enter key to run the executable.
+
+6. Once running, follow the instructions to parse XML files with desired requirements.
+
+## Sample
+
+- XML File (sample.xml):
 
 ```<root>
 <doc>
@@ -30,6 +45,10 @@ A Console app for analysing and printing out the structure of XML files.
 </doc>
 ```
 
-## Output
+- XMLBunny Console
 
-<img width="850" alt="Screenshot 2024-08-05 at 13 55 08" src="https://github.com/user-attachments/assets/2543f320-9d08-4283-ba6d-d061b150309c">
+![Screenshot 2024-08-19 220005](https://github.com/user-attachments/assets/39f50e9c-ace7-408b-b796-2f3b119cc552)
+
+- Output (sample.xlsx) File
+
+![Screenshot 2024-08-19 220249](https://github.com/user-attachments/assets/4414cd93-4c63-457c-b1d5-4fb569b5d6e2)
