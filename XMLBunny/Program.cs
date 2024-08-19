@@ -10,25 +10,24 @@ var xmlService = new XmlParserService();
 var excelService = new ExcelGeneratorService();
 
 Console.Clear();
+GenerateStatistics();
 
 void GenerateStatistics()
 { 
-    Console.Write("Enter Path To XML File: ");
-    var filePath = Console.ReadLine() ?? string.Empty;
-    Console.Write("Enter XML File Name: ");
-    var fileName = Console.ReadLine() ?? string.Empty;
-    Console.Write("Enter The Minimum Count Threshold: ");
-    var threshold = Console.ReadLine() ?? string.Empty;
-    
     try
     {
-        var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-        var path = Path.Combine(root, filePath, fileName);
-        var doc = new XmlDocument();
-        doc.Load(path);
-        if (doc.DocumentElement == null) throw new NullReferenceException("Something went wrong loading the XML file");
-        xmlService.ParseXml(doc.DocumentElement, tags, values, ranges);
-        SaveDataToExcel(fileName, Int32.Parse(threshold));
+        var (filePath, fileName, threshold) = GetUserInputs();
+        var xmlDocument = LoadXmlDocument(filePath, fileName);
+        if (xmlDocument.DocumentElement != null)
+        { 
+            xmlService.ParseXml(xmlDocument.DocumentElement, tags, values, ranges);
+            SaveDataToExcel(fileName, threshold);
+        }
+        else
+        {
+            Console.WriteLine("Something went wrong loading the XML file");
+            GenerateStatistics();
+        }
     }
     catch (Exception e)
     {
@@ -37,47 +36,84 @@ void GenerateStatistics()
     }
 }
 
+static (string filePath, string fileName, int threshold) GetUserInputs()
+{
+    string GetInput(string prompt)
+    {
+        Console.Write(prompt);
+        return Console.ReadLine()?.Trim() ?? string.Empty;
+    }
+    
+    var filePath = GetInput("Enter Path To XML File: ");
+    var fileName = GetInput("Enter XML File Name: ");
+    var threshold = int.Parse(GetInput("Enter The Minimum Count Threshold: "));
+
+    return (filePath, fileName, threshold);
+}
+
+static XmlDocument LoadXmlDocument(string filePath, string fileName)
+{
+    var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    var path = Path.Combine(root, filePath, fileName);
+    var doc = new XmlDocument();
+    doc.Load(path);
+        
+    if (doc.DocumentElement == null)
+        throw new NullReferenceException("Something went wrong loading the XML file");
+
+    return doc;
+}
+
 void SaveDataToExcel(string fileName, int threshold)
 {
     var row = 1;
     var column = 1;
     var workbook = new XLWorkbook();
-    var sheet = workbook.Worksheets.Add(fileName.Replace(".xml",""));
-    
+    var sheetName = fileName.Replace(".xml", string.Empty);
+    var sheet = workbook.Worksheets.Add(sheetName);
+
     excelService.SaveToExcel(sheet, tags, ranges, threshold, row, column);
-    
-    Console.Write("Enter The Path To Save The Output: ");
-    var path = Console.ReadLine() ?? string.Empty;
-    var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-    var outputFilePath = Path.Combine(root, path, fileName.Replace(".xml", ".xlsx"));
-    workbook.SaveAs(outputFilePath);
-    Console.WriteLine($"Data has been saved to {outputFilePath}");
+
+    var outputPath = GetOutputPath(fileName);
+    workbook.SaveAs(outputPath);
+    Console.WriteLine($"Data has been saved to {outputPath}");
 
     Restart();
 }
 
+static string GetOutputPath(string fileName)
+{
+    Console.Write("Enter The Path To Save The Output: ");
+    var path = Console.ReadLine()?.Trim() ?? string.Empty;
+    var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+    return Path.Combine(root, path, fileName.Replace(".xml", ".xlsx"));
+}
+
 void Restart()
 {
-    Console.Write("Do you want to parse another file?: ");
-    var response = Console.ReadLine() ?? "";
-    
-    if (response.ToLower().Trim() == "yes")
+    Console.Write("Do you want to parse another file? (yes/no): ");
+    var response = Console.ReadLine()?.Trim().ToLower();
+
+    switch (response)
     {
-        Console.Clear();
-        tags.Clear();
-        values.Clear();
-        ranges.Clear();
-        GenerateStatistics();
-    } 
-    else if (response.ToLower().Trim() == "no")
-    {
-        Environment.Exit(0);
-    }
-    else
-    {
-        Console.WriteLine("Please provide valid input (YES/NO)");
-        Restart();
+        case "yes":
+            ResetState();
+            GenerateStatistics();
+            break;
+        case "no":
+            Environment.Exit(0);
+            break;
+        default:
+            Console.WriteLine("Please provide valid input (yes/no)");
+            Restart();
+            break;
     }
 }
 
-GenerateStatistics();
+void ResetState()
+{
+    Console.Clear();
+    tags.Clear();
+    values.Clear();
+    ranges.Clear();
+}
