@@ -1,6 +1,9 @@
 name: Build and Publish Executable
 
-on: [push]
+on:
+  push:
+    paths-ignore:
+      - 'README.md'
 
 jobs:
   build:
@@ -29,4 +32,3 @@ jobs:
         with:
           name: XMLBunny
           path: ./publish
-          
