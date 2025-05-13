@@ -14,10 +14,10 @@ public class XmlParserService
         AddOrUpdateTag(node, tags);
         var tag = tags.Find(x => x.Name == node.Name);
 
-        // ✅ Add attribute values
+        // Ensure all attributes are processed and stored using namespaced keys for clarity
         if (tag != null)
         {
-            AddAttributesAsValues(node, tag, values, ranges);
+            AddAttributesAsValues(node, tag, tags, values, ranges);
         }
 
         if (IsTextNode(node))
@@ -48,7 +48,7 @@ public class XmlParserService
     {
         var tag = tags.Find(x => x.Name == node.Name);
         var cleanValue = Regex.Replace(node.InnerText.Trim(), @"\s+", " ");
-        var value = values.Find(x => x.Name == cleanValue);
+        var value = values.Find(x => x.Name == cleanValue && x.Tag == tag);
         var newValue = new Value { Name = cleanValue, Count = 1, Tag = tag };
 
         if (value == null)
@@ -60,33 +60,44 @@ public class XmlParserService
             ++value.Count;
         }
 
-        if (tag != null && !tag.Values.Exists(x => x.Name == newValue.Name))
+        if (tag != null && !tag.Values.Exists(x => x.Name == cleanValue))
         {
             tag.Values.Add(newValue);
         }
 
         if (tag != null)
         {
-            AddOrUpdateRange(node.InnerText.Trim(), tag, ranges);
+            AddOrUpdateRange(cleanValue, tag, ranges);
         }
     }
 
-    // ✅ NEW METHOD: Adds attribute values
-    private void AddAttributesAsValues(XmlNode node, Tag tag, List<Value> values, List<NumberRange> ranges)
+    // Improved: Ensures attributes are processed and stored using namespaced keys for better clarity and organization.
+    private void AddAttributesAsValues(XmlNode node, Tag tag, List<Tag> tags, List<Value> values, List<NumberRange> ranges)
     {
         if (node.Attributes == null) return;
 
         foreach (XmlAttribute attr in node.Attributes)
         {
-            string attrName = $"{node.Name}.{attr.Name}";
-            string attrValue = Regex.Replace(attr.Value.Trim(), @"\s+", " ");
+            string namespacedName = $"{node.Name}.{attr.Name}";
+            string cleanValue = Regex.Replace(attr.Value.Trim(), @"\s+", " ");
 
-            var value = values.Find(v => v.Name == attrValue);
+            var attrTag = tags.Find(x => x.Name == namespacedName);
+            if (attrTag == null)
+            {
+                attrTag = new Tag { Name = namespacedName, Count = 1 };
+                tags.Add(attrTag);
+            }
+            else
+            {
+                ++attrTag.Count;
+            }
+
+            var value = values.Find(v => v.Name == cleanValue && v.Tag == attrTag);
             var newValue = new Value
             {
-                Name = attrValue,
+                Name = cleanValue,
                 Count = 1,
-                Tag = tag
+                Tag = attrTag
             };
 
             if (value == null)
@@ -98,20 +109,15 @@ public class XmlParserService
                 ++value.Count;
             }
 
-            if (tag != null && !tag.Values.Exists(x => x.Name == attrValue))
+            if (!attrTag.Values.Exists(x => x.Name == cleanValue))
             {
-                tag.Values.Add(newValue);
+                attrTag.Values.Add(newValue);
             }
 
-            // ✅ Also add to ranges if it's numeric
-            if (tag != null)
-            {
-                AddOrUpdateRange(attrValue, tag, ranges);
-            }
+            AddOrUpdateRange(cleanValue, attrTag, ranges);
         }
     }
 
-    // ✅ Slightly modified to reuse for text or attribute value
     private void AddOrUpdateRange(string text, Tag tag, List<NumberRange> ranges)
     {
         if (int.TryParse(text, out int number))
