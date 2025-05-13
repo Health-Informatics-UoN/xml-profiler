@@ -15,10 +15,7 @@ public class XmlParserService
         var tag = tags.Find(x => x.Name == node.Name);
 
         // ✅ Add attribute values
-        if (tag != null)
-        {
-            AddAttributesAsValues(node, tag, values, ranges);
-        }
+        AddAttributesAsValues(node, tag, values, ranges);
 
         if (IsTextNode(node))
         {
