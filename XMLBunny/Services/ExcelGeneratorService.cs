@@ -5,6 +5,35 @@ namespace XMLBunny.Services;
 
 public class ExcelGeneratorService
 {
+    /// <summary>
+    /// Generates an Excel file with the parsed XML data.
+    /// </summary>
+    /// <param name="fileName">The name of the Excel file to be created.</param>
+    /// <param name="tags">A collection of tags to be included in the Excel file.</param>
+    /// <param name="ranges">A collection of number ranges to be included in the Excel file.</param>
+    /// <param name="threshold">The minimum count threshold for displaying tags and values.</param>
+    /// <param name="filePath">The path where the Excel file will be saved.</param>
+    public void GenerateExcel(string fileName, List<Tag> tags, List<NumberRange> ranges, int threshold, string filePath)
+    {
+        var workbook = new XLWorkbook();
+        var sheet = workbook.Worksheets.Add("XML Data");
+        
+        SaveToExcel(sheet, tags, ranges, threshold, 1, 1);
+        
+        var root = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var path = Path.Combine(root, filePath);
+        workbook.SaveAs(Path.Combine(path, $"{fileName}.xlsx"));
+    }
+
+    /// <summary>
+    /// Saves the parsed XML data to an Excel worksheet.
+    /// </summary>
+    /// <param name="sheet">The Excel worksheet to save data to.</param>
+    /// <param name="tags">A collection of tags to be included in the Excel file.</param>
+    /// <param name="ranges">A collection of number ranges to be included in the Excel file.</param>
+    /// <param name="threshold">The minimum count threshold for displaying tags and values.</param>
+    /// <param name="row">The starting row for writing data.</param>
+    /// <param name="column">The starting column for writing data.</param>
     public void SaveToExcel(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int threshold, int row, int column)
     {
         // Add empty tags to excel
@@ -36,6 +65,15 @@ public class ExcelGeneratorService
         SaveValueTags(sheet, tags, ranges, threshold, row, column);
     }
     
+    /// <summary>
+    /// Saves value tags and their associated ranges to the Excel worksheet.
+    /// </summary>
+    /// <param name="sheet">The Excel worksheet to save data to.</param>
+    /// <param name="tags">A collection of tags to be included in the Excel file.</param>
+    /// <param name="ranges">A collection of number ranges to be included in the Excel file.</param>
+    /// <param name="threshold">The minimum count threshold for displaying tags and values.</param>
+    /// <param name="row">The starting row for writing data.</param>
+    /// <param name="column">The starting column for writing data.</param>
     private void SaveValueTags(IXLWorksheet sheet, List<Tag> tags, List<NumberRange> ranges, int threshold, int row, int column)
     {
         var valueTags = tags.Where(x => x.Values.Count > 0).ToList();
@@ -68,7 +106,15 @@ public class ExcelGeneratorService
         // Add ranges to excel
         SaveRanges(sheet, ranges, threshold, row, column);
     }
-    
+
+    /// <summary>
+    /// Saves number ranges and their associated tags to the Excel worksheet.
+    /// </summary>
+    /// <param name="sheet">The Excel worksheet to save data to.</param>
+    /// <param name="ranges">A collection of number ranges to be included in the Excel file.</param>
+    /// <param name="threshold">The minimum count threshold for displaying tags and values.</param>
+    /// <param name="row">The starting row for writing data.</param>
+    /// <param name="column">The starting column for writing data.</param>
     private void SaveRanges(IXLWorksheet sheet, List<NumberRange> ranges, int threshold, int row, int column)
     {
         var exists = ranges.Find(x => x.Tag.Count > threshold);

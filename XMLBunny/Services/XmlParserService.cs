@@ -6,6 +6,13 @@ namespace XMLBunny.Services;
 
 public class XmlParserService
 {
+    /// <summary>
+    /// Parses an XML node and its children, updating the provided lists of tags, values, and number ranges.
+    /// </summary>
+    /// <param name="node">The XML node to process.</param>
+    /// <param name="tags">A collection of tags to be updated or added to.</param>
+    /// <param name="values">A collection of values to be updated or added to.</param>
+    /// <param name="ranges">A collection of number ranges to be updated or added to.</param>
     public void ParseXml(XmlNode node, List<Tag> tags, List<Value> values, List<NumberRange> ranges)
     {
         if (node == null) return;
@@ -31,6 +38,11 @@ public class XmlParserService
         }
     }
 
+    /// <summary>
+    /// Adds a new tag to the list or updates the count of an existing tag.
+    /// </summary>
+    /// <param name="node">The XML node representing the tag.</param>
+    /// <param name="tags">The list of tags to update.</param>
     private void AddOrUpdateTag(XmlNode node, List<Tag> tags)
     {
         var tag = tags.Find(x => x.Name == node.Name);
@@ -44,6 +56,14 @@ public class XmlParserService
         }
     }
 
+    /// <summary>
+    /// Adds a new value to the list or updates the count of an existing value.
+    /// Also associates the value with its parent tag and updates numerical ranges if applicable.
+    /// </summary>
+    /// <param name="node">The XML node containing the value.</param>
+    /// <param name="tags">The list of tags to update.</param>
+    /// <param name="values">The list of values to update.</param>
+    /// <param name="ranges">The list of number ranges to update.</param>
     private void AddOrUpdateValue(XmlNode node, List<Tag> tags, List<Value> values, List<NumberRange> ranges)
     {
         var tag = tags.Find(x => x.Name == node.Name);
@@ -71,7 +91,14 @@ public class XmlParserService
         }
     }
 
-    // Improved: Ensures attributes are processed and stored using namespaced keys for better clarity and organization.
+    /// <summary>
+    /// Processes attributes of an XML node and stores them as values associated with their parent tag.
+    /// </summary>
+    /// <param name="node">The XML node containing attributes.</param>
+    /// <param name="tag">The parent tag to associate the attributes with.</param>
+    /// <param name="tags">The list of tags to update.</param>
+    /// <param name="values">The list of values to update.</param>
+    /// <param name="ranges">The list of number ranges to update.</param>
     private void AddAttributesAsValues(XmlNode node, Tag tag, List<Tag> tags, List<Value> values, List<NumberRange> ranges)
     {
         if (node.Attributes == null) return;
@@ -117,7 +144,12 @@ public class XmlParserService
             AddOrUpdateRange(cleanValue, attrTag, ranges);
         }
     }
-
+    /// <summary>
+    /// Adds a number to an existing range or creates a new range for the tag.
+    /// </summary>
+    /// <param name="text">The text to parse as a number.</param>
+    /// <param name="tag">The tag associated with the range.</param>
+    /// <param name="ranges">The list of number ranges to update.</param>
     private void AddOrUpdateRange(string text, Tag tag, List<NumberRange> ranges)
     {
         if (int.TryParse(text, out int number))
@@ -138,6 +170,11 @@ public class XmlParserService
         }
     }
 
+    /// <summary>
+    /// Determines if an XML node is a text node.
+    /// </summary>
+    /// <param name="node">The XML node to check.</param>
+    /// <returns>True if the node is a text node; otherwise, false.</returns>
     private bool IsTextNode(XmlNode node)
     {
         return !string.IsNullOrWhiteSpace(node.InnerText) &&
